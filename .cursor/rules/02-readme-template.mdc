@@ -1,0 +1,364 @@
+---
+description: Regras para criação e atualização automática do README.md com índice navegável, estrutura de pastas comentada e rodapé padronizado. Ativado sempre que há modificação de arquivos, rotas, estrutura ou versão.
+alwaysApply: true
+---
+
+# README.md — Criação e Atualização Obrigatória
+
+## Regra Principal
+
+**Todo projeto DEVE ter um `README.md` na raiz.**
+
+Crie na primeira interação se não existir. Atualize **automaticamente** sempre que houver:
+- Novas rotas ou endpoints de API
+- Novos arquivos ou pastas relevantes
+- Mudanças de versão
+- Novas funcionalidades
+- Mudanças em variáveis de ambiente
+- Mudanças no processo de instalação ou execução
+
+Após atualizar, **commitar e fazer push imediatamente**:
+
+```bash
+git add README.md
+git commit -m "docs(readme): atualiza [seção modificada] — [motivo]"
+git push origin main
+# Se houver Azure Repos:
+git push azure main
+```
+
+---
+
+## Template Obrigatório do README.md
+
+```markdown
+<div align="center">
+
+# 🚀 [NOME DO PROJETO]
+
+### [Subtítulo descritivo — uma linha explicando o propósito]
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+<!-- Mantenha apenas os badges relevantes para a stack real do projeto -->
+
+**[Descrição curta e objetiva do que o sistema faz]**
+
+*[Stack principal em uma linha]*
+
+[Documentação](#documentacao) • [Instalação](#instalacao-rapida) • [Configuração](#configuracao) • [API](#api-endpoints)
+
+</div>
+
+---
+
+## 📑 Índice
+
+- [Visão Geral](#visao-geral)
+- [Funcionalidades](#funcionalidades)
+- [Arquitetura](#arquitetura)
+- [Tecnologias](#tecnologias)
+- [Pré-requisitos](#pre-requisitos)
+- [Instalação Rápida](#instalacao-rapida)
+- [Configuração](#configuracao)
+- [Uso](#uso)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [API Endpoints](#api-endpoints)
+- [Testes](#testes)
+- [Solução de Problemas](#solucao-de-problemas)
+- [Deploy](#deploy)
+- [Histórico de Versões](#historico-de-versoes)
+- [Documentação](#documentacao)
+- [Contribuindo](#contribuindo)
+- [Licença](#licenca)
+
+---
+
+<a id="visao-geral"></a>
+## 🎯 Visão Geral
+
+[Descrição detalhada do projeto, contexto, problema que resolve e para quem]
+
+### 🎨 Características Principais
+
+- **[Característica 1]**: [Descrição objetiva]
+- **[Característica 2]**: [Descrição objetiva]
+
+---
+
+<a id="funcionalidades"></a>
+## ✨ Funcionalidades
+
+### [Módulo ou Área 1]
+- **[Funcionalidade]**: [Descrição]
+
+### [Módulo ou Área 2]
+- **[Funcionalidade]**: [Descrição]
+
+---
+
+<a id="arquitetura"></a>
+## 🏗️ Arquitetura
+
+[Descrição da arquitetura e decisões principais]
+
+```
+┌─────────────────────────────────────────────┐
+│         API Layer (Routes)                   │  ← Endpoints HTTP
+├─────────────────────────────────────────────┤
+│      Business Logic Layer                    │  ← Regras de negócio
+├─────────────────────────────────────────────┤
+│   Infrastructure Layer                       │  ← Integrações externas
+└─────────────────────────────────────────────┘
+```
+
+**Princípios Aplicados:**
+- Separação de responsabilidades por camada
+- [Outros princípios relevantes para o projeto]
+
+---
+
+<a id="tecnologias"></a>
+## 🛠️ Tecnologias
+
+| Tecnologia | Versão | Propósito |
+|------------|--------|-----------|
+| **[Tech]** | x.x+ | [Uso específico no projeto] |
+
+---
+
+<a id="pre-requisitos"></a>
+## 📋 Pré-requisitos
+
+- ✅ **[Requisito 1]** — [Link ou instrução]
+- ✅ **[Requisito 2]** — [Link ou instrução]
+
+---
+
+<a id="instalacao-rapida"></a>
+## ⚡ Instalação Rápida
+
+```bash
+# Clone o repositório
+git clone [URL_DO_REPOSITÓRIO]
+cd [NOME_DO_PROJETO]
+
+# Instale as dependências
+npm install
+
+# Configure o ambiente
+cp .env.example .env
+# Edite o .env com suas credenciais
+
+# Execute em desenvolvimento
+npm run dev
+```
+
+---
+
+<a id="configuracao"></a>
+## ⚙️ Configuração
+
+<details>
+<summary><strong>🔧 Variáveis de Ambiente — Backend</strong></summary>
+
+```env
+# ============================================
+# [Grupo de configuração]
+# ============================================
+VARIAVEL_EXEMPLO=valor_padrao
+
+# ============================================
+# [Outro grupo]
+# ============================================
+OUTRA_VARIAVEL=valor
+```
+
+</details>
+
+---
+
+<a id="uso"></a>
+## 🎮 Uso
+
+[Instruções de uso com exemplos práticos e capturas de tela quando relevante]
+
+---
+
+<a id="estrutura-do-projeto"></a>
+## 📁 Estrutura do Projeto
+
+```
+[NOME_DO_PROJETO]/
+│
+├── 📂 [pasta-principal]/                # [Descrição da responsabilidade]
+│   ├── 📂 [subpasta]/                   # [Descrição]
+│   │   ├── arquivo.ext                  # [O que este arquivo faz]
+│   │   └── arquivo2.ext                 # [O que este arquivo faz]
+│   └── arquivo.ext                      # [O que este arquivo faz]
+│
+├── 📂 [pasta-secundaria]/               # [Descrição da responsabilidade]
+│   └── ...
+│
+├── .env.example                         # Exemplo de variáveis de ambiente
+├── .gitignore                           # Arquivos ignorados pelo Git
+├── .editorconfig                        # Padrão de formatação do editor
+├── package.json                         # Dependências e scripts npm
+└── README.md                            # Este arquivo
+```
+
+> **⚠️ Atualizar esta seção** sempre que criar, mover, renomear ou deletar arquivos/pastas relevantes.
+
+---
+
+<a id="api-endpoints"></a>
+## 📚 API Endpoints
+
+### 🔐 [Grupo — ex: Autenticação]
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/api/exemplo` | [Descrição clara] | ✅ |
+| `POST` | `/api/exemplo` | [Descrição clara] | ❌ |
+
+---
+
+<a id="testes"></a>
+## 🧪 Testes
+
+```bash
+# Executar todos os testes
+npm test
+
+# Com coverage
+npm run test:coverage
+
+# Testes específicos
+npm test -- --grep "nome do teste"
+```
+
+---
+
+<a id="solucao-de-problemas"></a>
+## 🐛 Solução de Problemas
+
+<details>
+<summary><strong>🔧 [Título do problema]</strong></summary>
+
+**Sintoma:** [Como o problema se manifesta]
+
+**Causa:** [Por que acontece]
+
+**Solução:**
+```bash
+[Comando ou instrução para resolver]
+```
+
+</details>
+
+---
+
+<a id="deploy"></a>
+## 🚀 Deploy
+
+[Instruções detalhadas de deploy para produção]
+
+---
+
+<a id="historico-de-versoes"></a>
+## 📋 Histórico de Versões
+
+| Versão | Data | Alterações |
+|--------|------|------------|
+| x.y.z | DD/MM/AAAA | [Descrição clara do que mudou] |
+
+---
+
+<a id="documentacao"></a>
+## 📖 Documentação
+
+- [Link para documentação adicional]
+- [Recursos externos relevantes]
+
+---
+
+<a id="contribuindo"></a>
+## 🤝 Contribuindo
+
+1. Crie uma branch: `git checkout -b feature/nome-da-feature`
+2. Commit suas mudanças seguindo Conventional Commits
+3. Push para a branch: `git push origin feature/nome-da-feature`
+4. Abra um Pull Request com descrição clara do que foi feito
+
+**Tipos de commit:** `feat | fix | docs | style | refactor | test | chore | perf | ci`
+
+---
+
+<a id="licenca"></a>
+## 📄 Licença
+
+[Tipo de licença] — [Descrição dos direitos e restrições]
+
+---
+
+## 📞 Suporte
+
+Para suporte, dúvidas ou problemas:
+
+1. Verifique a seção [Solução de Problemas](#solucao-de-problemas)
+2. Consulte a [Documentação](#documentacao)
+3. Entre em contato com a equipe de desenvolvimento
+
+---
+
+<div align="center">
+
+**Última atualização**: DD/MM/AAAA
+**Versão**: x.y.z
+**Stack**: [Tecnologias principais]
+**Desenvolvido por**: Marcelo Macedo
+**E-mail**: [marcelo.macedo@qualiit.com.br](mailto:marcelo.macedo@qualiit.com.br)
+
+---
+
+⭐ **Se este projeto foi útil, considere dar uma estrela!** ⭐
+
+</div>
+```
+
+---
+
+## Regras de Manutenção
+
+### Quando atualizar cada seção
+
+| Seção | Atualizar quando |
+|-------|-----------------|
+| Estrutura do Projeto | Criar, mover, renomear ou deletar arquivo/pasta |
+| API Endpoints | Criar, alterar assinatura ou deletar rota |
+| Histórico de Versões | Conjunto de mudanças relevantes (feat, fix, refactor) |
+| Configuração / .env | Adicionar, remover ou renomear variável de ambiente |
+| Funcionalidades | Nova feature entregue |
+| Solução de Problemas | Novo problema recorrente identificado |
+
+### Rodapé — campos fixos e obrigatórios
+
+- `Última atualização`: data atual no formato DD/MM/AAAA
+- `Versão`: versão atual seguindo SemVer
+- `Desenvolvido por`: Marcelo Macedo
+- `E-mail`: marcelo.macedo@qualiit.com.br
+
+### Formatação de IDs de âncora
+
+- Formato: `<a id="nome-da-secao"></a>` antes de cada `##`
+- IDs: minúsculas, sem acentos, hífens no lugar de espaços
+- Exemplos: `visao-geral`, `instalacao-rapida`, `api-endpoints`, `historico-de-versoes`
+
+### Formatação da estrutura de pastas
+
+- Pastas sempre com emoji 📂
+- Comentário `#` obrigatório em todos os itens
+- Alinhamento consistente dos comentários (use espaços)
+- Máximo de 4 níveis de profundidade
+- Descrições objetivas — o que o arquivo/pasta **faz**, não apenas o nome

@@ -1,0 +1,115 @@
+---
+description: Ativado quando o usuário pede revisão, review, análise ou auditoria de código. Define como estruturar a resposta de code review de forma profissional e acionável.
+globs: []
+alwaysApply: false
+---
+
+# Code Review — Estrutura e Critérios
+
+Ativado quando o usuário usa termos como: "revise", "review", "analise", "audite", "o que você acha desse código", "tem algo errado aqui", "como melhorar".
+
+---
+
+## Estrutura Obrigatória da Resposta de Review
+
+Sempre estruture o review nesta ordem:
+
+### 1. 🔴 Problemas Críticos (bloqueadores)
+Issues que **devem** ser corrigidos antes de ir para produção:
+- Falhas de segurança (injection, exposição de dados, falta de autenticação)
+- Bugs que causam comportamento incorreto
+- Memory leaks ou resource leaks
+- Race conditions
+- Tratamento de erro ausente em fluxos críticos
+
+### 2. 🟡 Problemas Importantes (alta prioridade)
+Issues que degradam qualidade mas não bloqueiam imediatamente:
+- Violações de princípios arquiteturais (lógica de negócio no lugar errado)
+- Código duplicado significativo
+- Ausência de validação de entrada
+- N+1 queries ou problemas de performance evidentes
+- Falta de tipagem em pontos críticos (TypeScript)
+
+### 3. 🔵 Sugestões de Melhoria (qualidade)
+Melhorias que elevam a qualidade sem serem urgentes:
+- Refatorações de legibilidade
+- Oportunidades de reutilização
+- Nomenclatura confusa
+- Comentários desnecessários ou ausentes onde deveriam existir
+- Testes ausentes em lógica importante
+
+### 4. ✅ O que está bom
+Reconheça explicitamente o que foi bem feito — review não é só criticar.
+
+### 5. 🔧 Código Refatorado (quando aplicável)
+Se houver problemas críticos ou importantes, entregue o código corrigido, não apenas a descrição do problema.
+
+---
+
+## Critérios de Avaliação
+
+Avalie o código nas seguintes dimensões, mencionando apenas as relevantes:
+
+| Dimensão | O que verificar |
+|----------|----------------|
+| **Segurança** | Input validation, secrets no código, SQL injection, XSS, IDOR |
+| **Corretude** | Lógica correta, edge cases tratados, erros tratados |
+| **Arquitetura** | Responsabilidades corretas, acoplamento, coesão |
+| **Performance** | N+1, loops desnecessários, estruturas de dados inadequadas |
+| **Testabilidade** | Injeção de dependências, funções puras, acoplamento testável |
+| **Legibilidade** | Nomes claros, funções pequenas, fluxo linear |
+| **Manutenibilidade** | DRY, SOLID aplicados, extensibilidade |
+| **TypeScript** | Tipagem adequada, sem `any`, tipos explícitos |
+
+---
+
+## Tom e Postura
+
+- **Específico** — "na linha 47, o `req.params.id` não é validado antes de usar na query" > "falta validação"
+- **Construtivo** — aponte o problema E a solução ou direção
+- **Justo** — reconheça o que está bom, não apenas o que está errado
+- **Direto** — sem rodeios, mas sem ser destrutivo
+- **Educativo** — explique o **porquê** do problema, não apenas o que mudar
+
+---
+
+## Exemplos de Feedback Bem Estruturado
+
+```
+🔴 CRÍTICO — Injeção de SQL (linha 23)
+O valor de `req.query.state` é interpolado diretamente na query WIQL sem sanitização.
+Um atacante pode manipular a query para acessar dados de outros projetos.
+
+// Atual (vulnerável)
+const query = `SELECT [System.Id] FROM WorkItems WHERE [System.State] = '${req.query.state}'`
+
+// Corrigido (seguro)
+const state = String(req.query.state ?? '').replace(/'/g, "''")
+const query = `SELECT [System.Id] FROM WorkItems WHERE [System.State] = '${state}'`
+// Melhor ainda: use uma allowlist de estados válidos antes de interpolar
+```
+
+```
+🟡 IMPORTANTE — Lógica de negócio na rota (linha 45-80)
+A rota `GET /features` contém 35 linhas de lógica de transformação de dados.
+Rotas devem apenas receber, delegar e responder. Extraia para um service ou helper.
+```
+
+```
+✅ BOM — Tratamento de erro consistente
+O uso de `next(error)` em todos os catch blocks está correto e delega
+corretamente ao error handler global. Boa prática mantida.
+```
+
+---
+
+## Quando Entregar Código Refatorado
+
+Sempre entregue código refatorado quando:
+- O problema é 🔴 Crítico
+- O problema é 🟡 Importante E a solução não é trivialmente óbvia
+- O usuário pede explicitamente "corrija" ou "refatore"
+
+Não entregue código quando:
+- É apenas uma sugestão 🔵 de estilo e o problema é auto-explicativo
+- A refatoração exigiria contexto que não foi compartilhado

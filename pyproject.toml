@@ -1,0 +1,51 @@
+[project]
+name = "converter-all-in-one"
+version = "1.0.0"
+description = "Sistema de conversão de documentos entre MD, DOCX, HTML, ODT, PDF, RST, RTF, TEX, TXT"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.6",
+    "pypandoc-binary>=1.13",
+    "docx-merge-xml>=0.1.1",
+    "markdown-pdf>=1.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.26",
+]
+
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | __pycache__
+    | \.venv
+    | build
+    | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.isort]
+known-first-party = ["config", "domain", "services", "converter", "api"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["backend"]
+addopts = "-v --tb=short"

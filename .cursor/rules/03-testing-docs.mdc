@@ -1,0 +1,157 @@
+---
+description: Regras de testabilidade, versionamento semântico, padronização, acessibilidade e mentalidade profissional.
+alwaysApply: true
+---
+
+# Testabilidade, Qualidade e Padronização
+
+---
+
+## 1. Testabilidade
+
+### Estratégia
+- **Testes unitários** — comportamento, não implementação
+- **Testes de integração** — fronteiras reais (I/O, APIs, banco de dados)
+- Mocks apenas onde há dependência externa real
+- Código testável por design, não adaptado depois para teste
+- Injeção de dependências para facilitar isolamento
+
+### Qualidade dos Testes
+- Rápidos, determinísticos e independentes entre si
+- Legíveis como documentação viva do sistema
+- Padrão **AAA**: Arrange → Act → Assert
+- **Given-When-Then** para cenários comportamentais
+- Um assert principal por teste (foco em uma falha por vez)
+- Evite lógica complexa dentro dos testes
+- Use builders/factories para dados de teste — nunca fixtures compartilhadas mutáveis
+
+### Nomenclatura
+O nome do teste deve descrever o comportamento esperado, não a implementação:
+
+```
+✅ "deve retornar erro 401 quando token estiver expirado"
+❌ "testTokenExpired"
+```
+
+### Cobertura
+- Foco em lógica crítica e casos de borda
+- Não persiga 100% de cobertura como meta arbitrária
+- Prefira 80% de cobertura significativa a 100% de cobertura trivial
+
+**Essência:** Confiança para evoluir o sistema sem medo.
+
+---
+
+## 2. Versionamento Semântico (SemVer)
+
+Todo projeto segue **MAJOR.MINOR.PATCH**:
+
+| Incremento | Quando |
+|-----------|--------|
+| `PATCH` (x.y.**Z**) | Bug fix, ajuste sem impacto na API pública |
+| `MINOR` (x.**Y**.0) | Nova feature sem breaking change |
+| `MAJOR` (**X**.0.0) | Breaking change — incompatível com versão anterior |
+
+### Changelog
+- Descreva **o que mudou e por quê**, não apenas "melhorias"
+- Documente depreciações com prazo de remoção antes de remover
+- Migrações devem ser versionadas e reversíveis
+
+**Essência:** Evoluir sem quebrar o cliente.
+
+---
+
+## 3. Padronização e Consistência
+
+### Obrigatório em todo projeto
+- Linting configurado e executando no CI (ESLint, flake8, golangci-lint)
+- Formatador automático configurado (Prettier, Black, gofmt)
+- `.editorconfig` presente na raiz para consistência entre editores
+- Convenções de nomenclatura definidas e seguidas consistentemente
+
+### Nomenclatura por contexto
+
+| Contexto | Convenção |
+|----------|-----------|
+| Variáveis e funções JS/TS | `camelCase` |
+| Classes e componentes React | `PascalCase` |
+| Constantes globais | `UPPER_SNAKE_CASE` |
+| Arquivos de componente React | `PascalCase.tsx` |
+| Arquivos de utilitário/hook | `camelCase.ts` |
+| Variáveis de ambiente | `UPPER_SNAKE_CASE` |
+| Rotas de API REST | `kebab-case` |
+
+### Code Review
+- Foque em lógica, arquitetura e segurança
+- Estilo é responsabilidade do formatter, não do reviewer
+- Seja construtivo e específico — evite "LGTM" sem análise
+- Review é oportunidade de aprendizado mútuo
+
+**Essência:** Código parece escrito por um único time experiente.
+
+---
+
+## 4. Documentação Técnica
+
+### O que documentar
+- **README** — setup, arquitetura, como rodar, como contribuir
+- **ADRs** — Architecture Decision Records para decisões importantes
+- **Comentários inline** — apenas quando a intenção não é óbvia pelo código
+- **JSDoc/docstrings** — em funções públicas e APIs complexas
+- **OpenAPI/Swagger** — para APIs REST expostas externamente
+
+### O que NÃO documentar
+- O "o quê" — o código já diz isso
+- Comentários que repetem o nome da função/variável
+- Código morto comentado — delete, o Git guarda o histórico
+
+### Princípios
+- Documentação vive junto com o código no mesmo repositório
+- Use exemplos reais, não teóricos
+- Atualize ou remova — documentação desatualizada é pior que nenhuma
+- Foque no **"porquê"** — contexto e decisão, não descrição
+
+**Essência:** Reduzir dependência de pessoas específicas.
+
+---
+
+## 5. Acessibilidade (Frontend)
+
+- **WCAG 2.1 nível AA** como mínimo
+- ARIA usado apropriadamente — não em excesso
+- Contraste mínimo 4.5:1 para texto normal, 3:1 para texto grande
+- Navegação por teclado funcional com tab order lógico
+- Textos alternativos descritivos para imagens e ícones funcionais
+- Foco visível em todos os elementos interativos
+- Respeite `prefers-reduced-motion` e `prefers-color-scheme`
+- Teste com leitores de tela quando aplicável
+
+**Essência:** Software inclusivo é software melhor.
+
+---
+
+## 6. Internacionalização e Localização
+
+- Strings traduzíveis externalizadas — nunca hardcode em componentes
+- Formatos de data, hora, número e moeda baseados no locale
+- Encoding UTF-8 por padrão em todos os arquivos
+- Timezone handling explícito — nunca assuma UTC ou local
+- Espaço para expansão de texto (alemão cresce ~30% vs inglês)
+
+**Essência:** Código preparado para o mundo.
+
+---
+
+## 7. Mentalidade Profissional
+
+- **Código é lido muito mais do que escrito** — otimize para leitura
+- **Clareza sempre vence esperteza**
+- **Boy Scout Rule** — sempre deixe o código melhor do que encontrou
+- Pense no desenvolvedor que vai manter isso daqui 2 anos
+- Dívida técnica é consciente, documentada e tem plano de pagamento
+- Refactoring é parte normal do trabalho, não extra
+- Critique o código com rigor, não as pessoas
+- Sugira melhorias proativamente ao identificar riscos técnicos
+- Prefira boring technology quando ela resolve o problema adequadamente
+
+**Essência:** Engenharia profissional, não artesanato aleatório.

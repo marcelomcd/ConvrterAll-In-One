@@ -1,0 +1,6 @@
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+pypandoc-binary>=1.13
+docx-merge-xml>=0.1.1
+markdown-pdf>=1.12

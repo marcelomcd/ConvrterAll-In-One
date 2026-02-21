@@ -1,0 +1,358 @@
+---
+description: Padrões concretos para a stack principal do projeto — Node.js, Express, React, TypeScript. Ativado em arquivos .ts, .tsx, .js, .jsx e configurações relacionadas.
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/package.json", "**/vite.config.*", "**/tsconfig.*"]
+alwaysApply: false
+---
+
+# Stack Principal — Node.js + Express + React + TypeScript
+
+---
+
+## 1. TypeScript — Regras Obrigatórias
+
+### Configuração
+- `strict: true` sempre habilitado no `tsconfig.json`
+- `noImplicitAny: true`
+- `strictNullChecks: true`
+- `noUnusedLocals: true`
+- `noUnusedParameters: true`
+
+### Tipagem
+- **Nunca use `any`** — use `unknown` e narrowing se necessário
+- Prefira `interface` para objetos públicos/contratos de API
+- Prefira `type` para unions, intersections e tipos utilitários
+- Use tipos utilitários nativos: `Partial<T>`, `Pick<T, K>`, `Omit<T, K>`, `Record<K, V>`
+- Evite type assertions (`as`) — prefira type guards
+- DTOs e contratos de API sempre tipados explicitamente
+
+```typescript
+// ✅ Correto
+interface UserDTO {
+  id: string
+  name: string
+  email: string
+}
+
+// ❌ Errado
+const user: any = { ... }
+const user = response as User
+```
+
+### Enums vs Union Types
+```typescript
+// ✅ Prefira union types — tree-shakeable e mais simples
+type FarolStatus = 'green' | 'yellow' | 'red' | 'undefined'
+
+// ⚠️ Use enum apenas quando precisar iterar os valores
+enum Permission { Read = 'read', Write = 'write' }
+```
+
+---
+
+## 2. Node.js + Express — Padrões
+
+### Estrutura de Rota (padrão obrigatório)
+
+```javascript
+// routes/features.js — responsabilidade: receber, delegar, responder
+import { Router } from 'express'
+import { FeaturesService } from '../services/featuresService.js'
+
+const router = Router()
+const service = new FeaturesService()
+
+router.get('/', async (req, res, next) => {
+  try {
+    const { state, pmo, responsible } = req.query
+    const features = await service.listFeatures({ state, pmo, responsible })
+    res.json({ data: features, total: features.length })
+  } catch (error) {
+    next(error) // sempre delegar ao error handler global
+  }
+})
+
+export default router
+```
+
+### Error Handler Global (obrigatório em todo projeto Express)
+
+```javascript
+// middleware/errorHandler.js
+export function errorHandler(err, req, res, next) {
+  const requestId = req.headers['x-request-id'] ?? 'unknown'
+
+  console.error(JSON.stringify({
+    level: 'error',
+    requestId,
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    path: req.path,
+    method: req.method,
+  }))
+
+  const status = err.status ?? err.statusCode ?? 500
+
+  res.status(status).json({
+    error: {
+      message: status === 500 ? 'Erro interno do servidor' : err.message,
+      requestId,
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    }
+  })
+}
+```
+
+### Validação de Variáveis de Ambiente (obrigatório no startup)
+
+```javascript
+// config/env.js — valide antes de iniciar o servidor
+const required = [
+  'AZDO_PAT',
+  'AZDO_ORG',
+  'SECRET_KEY',
+  'AZURE_AD_TENANT_ID',
+  'AZURE_AD_CLIENT_ID',
+  'AZURE_AD_CLIENT_SECRET',
+]
+
+export function validateEnv() {
+  const missing = required.filter(key => !process.env[key])
+  if (missing.length > 0) {
+    throw new Error(`Variáveis de ambiente obrigatórias ausentes: ${missing.join(', ')}`)
+  }
+}
+```
+
+### Logs Estruturados (padrão)
+
+```javascript
+// ✅ Log estruturado — pesquisável e parseável
+console.log(JSON.stringify({
+  level: 'info',
+  requestId: req.headers['x-request-id'],
+  message: 'Features listadas com sucesso',
+  count: features.length,
+  duration_ms: Date.now() - startTime,
+}))
+
+// ❌ Log não estruturado — difícil de monitorar
+console.log(`Features: ${features.length}`)
+```
+
+---
+
+## 3. React + TypeScript — Padrões
+
+### Estrutura de Componente (padrão obrigatório)
+
+```typescript
+// components/Dashboard/MetricCard.tsx
+
+interface MetricCardProps {
+  title: string
+  value: number
+  trend?: 'up' | 'down' | 'stable'
+  isLoading?: boolean
+}
+
+export function MetricCard({ title, value, trend, isLoading = false }: MetricCardProps) {
+  if (isLoading) return <MetricCardSkeleton />
+
+  return (
+    <div className="...">
+      <h3>{title}</h3>
+      <span>{value}</span>
+      {trend && <TrendIndicator direction={trend} />}
+    </div>
+  )
+}
+
+// Named export — não default export para componentes (facilita refactoring)
+```
+
+### Custom Hooks — Padrão
+
+```typescript
+// hooks/useDashboardMetrics.ts
+import { useQuery } from '@tanstack/react-query'
+import { fetchConsolidated } from '../services/api'
+
+interface UseDashboardMetricsOptions {
+  filters?: DashboardFilters
+  refetchInterval?: number
+}
+
+export function useDashboardMetrics({ filters, refetchInterval = 300_000 }: UseDashboardMetricsOptions = {}) {
+  const query = useQuery({
+    queryKey: ['dashboard', 'metrics', filters],
+    queryFn: () => fetchConsolidated(filters),
+    staleTime: 60_000,
+    refetchInterval,
+  })
+
+  return {
+    metrics: query.data,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  }
+}
+```
+
+### Context API — Padrão
+
+```typescript
+// contexts/AuthContext.tsx
+interface AuthContextValue {
+  user: User | null
+  isAuthenticated: boolean
+  login: (token: string) => void
+  logout: () => void
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de AuthProvider')
+  }
+  return context
+}
+```
+
+### Organização de Arquivos Frontend
+
+```
+src/
+├── components/          # Componentes reutilizáveis (UI pura)
+│   ├── [Feature]/       # Agrupado por feature/domínio
+│   │   ├── index.ts     # Barrel export
+│   │   └── Component.tsx
+│   └── ui/              # Componentes base (Button, Input, Modal)
+├── pages/               # Páginas (composição de componentes)
+├── hooks/               # Custom hooks reutilizáveis
+├── services/            # Comunicação com API (axios calls)
+├── contexts/            # Context providers globais
+├── utils/               # Funções puras utilitárias
+├── types/               # Tipos e interfaces compartilhados
+└── constants/           # Constantes e configurações
+```
+
+### Barrel Exports (padrão para componentes)
+
+```typescript
+// components/Dashboard/index.ts
+export { MetricCard } from './MetricCard'
+export { ChartWithActions } from './ChartWithActions'
+export { DashboardFilters } from './DashboardFilters'
+// Importação limpa: import { MetricCard, ChartWithActions } from '../components/Dashboard'
+```
+
+---
+
+## 4. React Query — Padrões
+
+```typescript
+// Query keys centralizadas — evita duplicação e typos
+export const queryKeys = {
+  dashboard: {
+    all: ['dashboard'] as const,
+    consolidated: (filters?: DashboardFilters) => 
+      [...queryKeys.dashboard.all, 'consolidated', filters] as const,
+  },
+  features: {
+    all: ['features'] as const,
+    detail: (id: string) => [...queryKeys.features.all, id] as const,
+  },
+} as const
+```
+
+---
+
+## 5. Service Layer — Padrão (separação API call da lógica)
+
+```typescript
+// services/api.ts — responsabilidade: HTTP calls apenas
+import axios from 'axios'
+
+const apiClient = axios.create({
+  baseURL: '/api',
+  timeout: 30_000,
+})
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
+export const fetchConsolidated = (filters?: DashboardFilters) =>
+  apiClient.get('/azdo/consolidated', { params: filters }).then(r => r.data)
+```
+
+---
+
+## 6. Tailwind CSS — Convenções
+
+- Extraia classes repetidas para componentes, não para `@apply` (mantém rastreabilidade)
+- Use variáveis CSS para tokens de design (cores do tema, espaçamentos customizados)
+- Dark mode via classe `dark:` — nunca inline style para isso
+- Prefira composição de componentes a sobrescrita de classes
+
+---
+
+## 7. Async/Await — Regras
+
+```typescript
+// ✅ Sempre trate erros em async functions
+async function fetchFeatures(): Promise<Feature[]> {
+  try {
+    const response = await apiClient.get('/features')
+    return response.data
+  } catch (error) {
+    logger.error('Falha ao buscar features', { error })
+    throw new AppError('Não foi possível carregar as features', 503)
+  }
+}
+
+// ❌ Nunca deixe erros silenciosos
+async function fetchFeatures() {
+  const response = await apiClient.get('/features') // erro não tratado
+  return response.data
+}
+```
+
+---
+
+## 8. Imports — Ordem e Organização
+
+```typescript
+// 1. Node.js built-ins
+import path from 'path'
+
+// 2. Dependências externas
+import express from 'express'
+import { useQuery } from '@tanstack/react-query'
+
+// 3. Imports internos absolutos (alias configurado)
+import { AuthService } from '@/services/authService'
+
+// 4. Imports relativos
+import { formatDate } from '../utils/date'
+import type { Feature } from './types'
+
+// Linha em branco separando cada grupo
+```

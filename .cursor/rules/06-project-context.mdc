@@ -1,0 +1,218 @@
+---
+description: Contexto persistente do desenvolvedor e empresa. Define quem é o desenvolvedor, como prefere trabalhar, quais linguagens e ferramentas usa, e proibições universais válidas para qualquer projeto ou linguagem.
+alwaysApply: true
+---
+
+# Contexto do Desenvolvedor — Quali IT
+
+## Desenvolvedor
+
+- **Nome**: Marcelo Macedo
+- **Empresa**: Quali IT — Inovação e Tecnologia
+- **E-mail**: marcelo.macedo@qualiit.com.br
+- **Papel**: Desenvolvedor principal / responsável pelos projetos
+- **Idioma de trabalho**: Português brasileiro (pt-BR)
+- **OS**: Windows — usa Git Bash, WSL ou PowerShell dependendo do contexto
+- **Editor**: Cursor AI
+- **Repositório primário**: GitHub (privado) — nome igual à pasta do workspace
+- **Repositório secundário**: Azure Repos (dev.azure.com/qualiit) quando informado
+
+---
+
+## Preferências de Resposta (universais)
+
+- **Idioma**: sempre responda em **português brasileiro**
+- **Comentários no código**: em português quando necessário
+- **Mensagens de commit**: português ou inglês (ambos aceitáveis)
+- **Logs da aplicação**: português — facilita suporte interno
+- **Mensagens de erro para o usuário final**: português
+- **Documentação técnica** (README, ADRs, docstrings): português
+- **Nível de resposta**: sênior para sênior — sem explicar o óbvio, foque no que importa
+
+---
+
+## Linguagens e Stacks Utilizadas
+
+A Quali IT trabalha com projetos variados. Identifique a linguagem pelo contexto do arquivo aberto e aplique as convenções corretas automaticamente.
+
+### JavaScript / TypeScript
+- Stack principal de produtos web internos
+- Backend: Node.js 18+ com Express
+- Frontend: React 18+ com TypeScript strict, Vite, React Query, Tailwind CSS
+- Sempre TypeScript com `strict: true` — nunca `any` sem justificativa explícita
+- ESLint + Prettier obrigatórios
+- Async/await sobre callbacks ou `.then()`
+- Logs estruturados em JSON
+
+### Python
+- Usado em automações, scripts de ETL, integrações e análise de dados
+- Sempre com **type hints** em funções públicas
+- Formatter: **Black** + **isort** + **ruff** (ou flake8)
+- **Virtual environment** sempre (`venv` ou `poetry`)
+- Dataclasses ou Pydantic para estruturas de dados
+- Docstrings no formato Google (`Args:`, `Returns:`, `Raises:`)
+- Evite mutabilidade em default parameters
+
+```python
+# ✅ Correto
+def fetch_features(state: str, limit: int = 100) -> list[Feature]:
+    """Busca features pelo estado informado.
+
+    Args:
+        state: Estado do work item (ex: 'Active', 'Closed').
+        limit: Número máximo de resultados.
+
+    Returns:
+        Lista de features encontradas.
+
+    Raises:
+        AzdoAPIError: Se a API do Azure DevOps retornar erro.
+    """
+
+# ❌ Errado — default mutável e sem tipagem
+def fetch_features(filters={}):
+```
+
+### PowerShell
+- Usado para automações Windows, scripts de deploy e administração de sistemas
+- Sempre use **verbos aprovados** (`Get-`, `Set-`, `New-`, `Remove-`, `Invoke-`)
+- `[CmdletBinding()]` e `param()` em todo script com parâmetros
+- Trate erros com `try/catch` — nunca ignore `$Error`
+- Use `-ErrorAction Stop` em comandos críticos
+- Prefira `Write-Verbose` e `Write-Error` a `Write-Host`
+
+```powershell
+# ✅ Correto
+[CmdletBinding()]
+param (
+    [Parameter(Mandatory)]
+    [string]$ProjectName,
+
+    [string]$Environment = 'development'
+)
+
+try {
+    $result = Invoke-RestMethod -Uri $apiUrl -ErrorAction Stop
+    Write-Verbose "Projeto $ProjectName carregado com sucesso"
+} catch {
+    Write-Error "Falha ao carregar projeto: $_"
+    exit 1
+}
+```
+
+### C# / .NET
+- Usado em integrações corporativas, APIs .NET e ferramentas internas
+- **Nullable reference types** habilitado (`<Nullable>enable</Nullable>`)
+- `async/await` com `ConfigureAwait(false)` em bibliotecas
+- `record` types para DTOs e objetos imutáveis
+- `IDisposable` + `using` para recursos
+- LINQ quando aumenta legibilidade — evite em hot paths
+- Docstrings XML (`/// <summary>`) em membros públicos
+
+```csharp
+// ✅ Correto
+public record FeatureDto(string Id, string Title, string State);
+
+public async Task<IEnumerable<FeatureDto>> GetFeaturesAsync(
+    string state,
+    CancellationToken cancellationToken = default)
+{
+    ArgumentException.ThrowIfNullOrEmpty(state);
+    return await _repository
+        .GetByStateAsync(state, cancellationToken)
+        .ConfigureAwait(false);
+}
+```
+
+### SQL
+- Usado em consultas MySQL, SQL Server e PostgreSQL
+- **Nunca interpole variáveis** — sempre use parâmetros (`@param`, `?`, `$1`)
+- Alias explícitos em todas as colunas de JOINs
+- Prefira CTEs (`WITH`) a subqueries aninhadas
+- Nunca `SELECT *` em produção — liste as colunas explicitamente
+- Considere índices para colunas em `WHERE`, `JOIN` e `ORDER BY`
+
+```sql
+-- ✅ Correto
+WITH features_abertas AS (
+    SELECT
+        wi.id          AS work_item_id,
+        wi.title       AS titulo,
+        wi.state       AS estado,
+        wi.target_date AS data_alvo
+    FROM work_items wi
+    WHERE wi.type    = @work_item_type
+      AND wi.state  <> 'Closed'
+)
+SELECT * FROM features_abertas
+WHERE data_alvo < GETDATE()
+ORDER BY data_alvo ASC;
+```
+
+### Bash / Shell Script
+- Usado em automações, CI/CD e utilitários Linux/WSL
+- Sempre comece com `#!/usr/bin/env bash` e `set -euo pipefail`
+- Variáveis sempre entre aspas: `"$variavel"`
+- Funções para blocos reutilizáveis
+- Valide parâmetros obrigatórios no início
+- Use `readonly` para constantes
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly PROJECT_NAME="${1:?'Nome do projeto é obrigatório'}"
+
+log()   { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+error() { echo "[ERROR] $*" >&2; exit 1; }
+
+log "Iniciando deploy de $PROJECT_NAME"
+```
+
+---
+
+## Proibições Universais (qualquer linguagem, qualquer projeto)
+
+- ❌ **Secrets, tokens ou senhas** no código — use variáveis de ambiente ou vault
+- ❌ **Código que funciona só no caminho feliz** — sempre trate erros e edge cases
+- ❌ **`git add .` sem revisar** o que está sendo adicionado
+- ❌ **Commitar `.env`** — verificar `.gitignore` antes de qualquer commit
+- ❌ **Logs com dados sensíveis** — nenhuma senha, token, CPF ou dado pessoal
+- ❌ **Código incompleto entregue** — se não está pronto, não entregue
+- ❌ **TODOs sem justificativa** — documente o porquê e o impacto se não pode resolver agora
+- ❌ **Comentários que repetem o código** — comente o *porquê*, nunca o *o quê*
+
+---
+
+## Repositórios e Versionamento
+
+- **GitHub** (privado): repositório principal, nome igual à pasta do workspace
+- **Azure Repos** (dev.azure.com/qualiit): secundário, quando informado
+- **Convenção de commit**: Conventional Commits (`feat`, `fix`, `docs`, `refactor`, etc.)
+- **Branch principal**: `main`
+- **SemVer**: MAJOR.MINOR.PATCH em todos os projetos
+
+---
+
+## Integrações Recorrentes na Quali IT
+
+| Sistema | Uso | Observação |
+|---------|-----|------------|
+| Azure DevOps (WIQL) | Gestão de projetos e work items | Query em 2 etapas: WIQL → IDs → hidratação |
+| Microsoft Entra ID | Autenticação OAuth 2.0 | JWT + validação de domínio de e-mail |
+| GitHub Actions | CI/CD | Pipelines de build, test e deploy |
+| MySQL | Banco de dados (ServiceUp) | Acesso via connection pool |
+| Azure App Service | Hospedagem de APIs | Deploy via Docker ou zip deploy |
+
+---
+
+## Decisões Arquiteturais Registradas
+
+| Decisão | Motivo |
+|---------|--------|
+| Dois repositórios remotos (GitHub + Azure Repos) | GitHub para CI e visibilidade; Azure Repos como backup corporativo |
+| Node.js no backend (migração do Python) | Consistência de linguagem com o frontend React/TypeScript |
+| NewFarol ↔ ServiceUp via iframe | Isolamento total — equipes e deploys independentes, zero acoplamento |
+| WIQL em duas etapas | Azure DevOps não retorna campos completos na query WIQL — hidratação separada é obrigatória |
+| Cache in-memory com TTL | Reduz chamadas à API — dados têm baixa frequência de mudança |
+| App single-tenant + convidados B2B | Controle total do acesso sem depender de aprovação do tenant do cliente |

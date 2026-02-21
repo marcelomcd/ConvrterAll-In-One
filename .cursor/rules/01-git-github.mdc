@@ -1,0 +1,196 @@
+---
+description: Fluxo obrigatório de Git, criação automática de repositório GitHub privado, commits convencionais e push para múltiplos remotos (GitHub + Azure Repos).
+alwaysApply: true
+---
+
+# Git e GitHub — Fluxo Obrigatório
+
+## Regra Principal
+
+**Todo projeto DEVE ter um repositório GitHub privado.**
+O nome do repositório deve ser **idêntico ao nome da pasta raiz do workspace**.
+
+Exemplo: pasta `NewFarol` → repositório GitHub `NewFarol`.
+
+---
+
+## 1. Criação do Repositório (Primeira Interação com o Projeto)
+
+Ao iniciar ou receber um projeto sem repositório configurado, execute **obrigatoriamente**:
+
+```bash
+# 1. Inicializar Git local se não existir
+git init
+
+# 2. Criar .gitignore adequado à stack (se não existir)
+
+# 3. Criar repositório PRIVADO no GitHub com nome igual à pasta raiz
+gh repo create $(basename "$PWD") --private --source=. --remote=origin --push
+
+# 4. Confirmar
+git remote -v
+```
+
+> **Pré-requisito:** GitHub CLI autenticado. Se não estiver: `gh auth login`
+
+---
+
+## 2. Múltiplos Repositórios Remotos
+
+Se o usuário informar um segundo repositório (Azure Repos, GitLab, Bitbucket), **sempre** configure ambos e faça push para os dois.
+
+### Configuração (GitHub + Azure Repos)
+
+```bash
+# GitHub como origin principal
+git remote set-url origin https://github.com/SEU_USUARIO/NOME_REPO.git
+
+# Azure Repos como remote secundário
+git remote add azure https://SEU_ORG@dev.azure.com/SEU_ORG/PROJETO/_git/NOME_REPO
+
+# Verificar
+git remote -v
+```
+
+### Push para ambos (sempre)
+
+```bash
+git push origin main
+git push azure main
+```
+
+### Push simultâneo automático (configurar quando usuário pedir)
+
+```bash
+# Configura origin para fazer push nos dois de uma vez
+git remote set-url --add --push origin https://github.com/SEU_USUARIO/NOME_REPO.git
+git remote set-url --add --push origin https://SEU_ORG@dev.azure.com/SEU_ORG/PROJETO/_git/NOME_REPO
+# Após isso: git push origin main já envia para os dois
+```
+
+---
+
+## 3. Fluxo de Commit — Conventional Commits (Obrigatório)
+
+```bash
+git status
+git add <arquivos específicos>    # Evite git add . sem revisão
+git commit -m "tipo(escopo): descrição objetiva no imperativo"
+git push origin main
+# Se houver Azure Repos:
+git push azure main
+```
+
+### Tipos de commit
+
+| Tipo | Uso |
+|------|-----|
+| `feat` | Nova funcionalidade |
+| `fix` | Correção de bug |
+| `docs` | Documentação (inclui README) |
+| `style` | Formatação sem mudança de lógica |
+| `refactor` | Refatoração sem nova feature ou fix |
+| `test` | Adição ou correção de testes |
+| `chore` | Manutenção, dependências, configs |
+| `perf` | Melhoria de performance |
+| `ci` | Mudanças em CI/CD |
+| `build` | Mudanças no sistema de build |
+
+### Exemplos
+
+```
+feat(auth): adiciona fluxo OAuth com Microsoft Entra ID
+fix(dashboard): corrige contagem de projetos atrasados
+docs(readme): atualiza estrutura de pastas e endpoints da API
+refactor(cache): extrai TTLCache para módulo independente
+chore(deps): atualiza dependências para corrigir vulnerabilidades
+```
+
+---
+
+## 4. Estratégia de Branches
+
+| Branch | Finalidade |
+|--------|-----------|
+| `main` | Produção — sempre estável |
+| `feature/nome` | Nova funcionalidade |
+| `fix/nome` | Correção de bug |
+| `release/x.y.z` | Preparação de release |
+| `hotfix/nome` | Correção urgente em produção |
+
+```bash
+# Criar branch
+git checkout -b feature/nome-da-feature
+
+# Merge (prefira PR, mas para projetos solo)
+git checkout main
+git merge feature/nome-da-feature --no-ff
+git push origin main
+```
+
+---
+
+## 5. .gitignore Padrão (verificar/criar sempre)
+
+Nunca commitar:
+
+```gitignore
+# === Dependências ===
+node_modules/
+vendor/
+.venv/
+__pycache__/
+*.pyc
+
+# === Build / Dist ===
+dist/
+build/
+out/
+.next/
+.nuxt/
+*.egg-info/
+
+# === Secrets — NUNCA no Git ===
+.env
+.env.local
+.env.*.local
+.env.production
+*.pem
+*.key
+*.p12
+secrets/
+credentials/
+
+# === IDEs ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+*.log
+logs/
+npm-debug.log*
+
+# === Cache ===
+.cache/
+.parcel-cache/
+.turbo/
+
+# === Testes ===
+coverage/
+.nyc_output/
+```
+
+---
+
+## 6. Checklist de Versionamento (antes de encerrar qualquer sessão)
+
+- [ ] Todos os arquivos relevantes foram commitados?
+- [ ] A mensagem segue Conventional Commits?
+- [ ] Push feito para GitHub?
+- [ ] Se houver Azure Repos, push feito lá também?
+- [ ] O `.gitignore` está adequado?
+- [ ] O README.md foi atualizado se necessário?

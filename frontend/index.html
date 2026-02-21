@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converter All-in-One</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Converter All-in-One</h1>
+            <p class="subtitle">Converta documentos entre MD, DOCX, HTML, ODT, PDF, RST, RTF, TEX e TXT</p>
+        </header>
+
+        <main class="main">
+            <form id="convertForm" class="form">
+                <div class="form-group">
+                    <label for="sourceFile">Arquivo de origem *</label>
+                    <input type="file" id="sourceFile" name="source_file" required accept=".md,.markdown,.html,.htm,.rst,.tex,.txt,.docx,.odt">
+                    <span class="hint">MD, HTML, RST, TEX, TXT, DOCX, ODT</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputFormat">Converter para</label>
+                    <select id="outputFormat" name="output_format">
+                        <optgroup label="Documento">
+                            <option value="docx">DOCX (Word)</option>
+                            <option value="odt">ODT</option>
+                            <option value="pdf">PDF</option>
+                            <option value="rtf">RTF</option>
+                        </optgroup>
+                        <optgroup label="Web / Markup">
+                            <option value="html">HTML</option>
+                            <option value="md">Markdown (MD)</option>
+                            <option value="rst">RST</option>
+                            <option value="tex">LaTeX (TEX)</option>
+                            <option value="txt">Texto (TXT)</option>
+                    </select>
+                </div>
+
+                <div class="form-group template-group" id="templateGroup">
+                    <label for="templateFile">Arquivo base DOCX (opcional)</label>
+                    <input type="file" id="templateFile" name="template_file" accept=".docx">
+                    <span class="hint">Use um DOCX com placeholder <code>{{CONTEUDO}}</code> para preservar capa e layout</span>
+                </div>
+
+                <div class="form-group placeholder-group" id="placeholderGroup">
+                    <label for="placeholder">Placeholder no template</label>
+                    <input type="text" id="placeholder" name="placeholder" value="{{CONTEUDO}}" placeholder="{{CONTEUDO}}">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Converter</button>
+                </div>
+            </form>
+
+            <div id="result" class="result hidden">
+                <p class="result-message">Conversão concluída!</p>
+                <a id="downloadLink" class="btn btn-download" download>Baixar arquivo</a>
+            </div>
+
+            <div id="error" class="error hidden"></div>
+            <div id="loading" class="loading hidden">Convertendo...</div>
+        </main>
+
+        <footer class="footer">
+            <p>Requer <a href="https://pandoc.org/installing.html" target="_blank" rel="noopener">Pandoc</a> instalado. PDF exige LaTeX ou wkhtmltopdf.</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
